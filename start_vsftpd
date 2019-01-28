@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e
+FTP_USER=${FTP_USER:-"ftpuser"}
+FTP_PASS=${FTP_PASS:-"123456"}
+PASV_ADDRESS=${PASV_ADDRESS:-"127.0.0.1"}
+PASV_MIN_PORT=${PASV_MIN_PORT:-65000}
+PASV_MAX_PORT=${PASV_MAX_PORT:-65100}
+
+
+
+mkdir -p "/var/vsftpd/${FTP_USER}"
+chown -R ftp:ftp /var/vsftpd/
+
+mkdir -p /etc/vsftpd
+mkdir -p  /var/log/vsftpd
+
+echo -e "${FTP_USER}\n${FTP_PASS}" > /etc/vsftpd/virtual_users.txt
+/usr/bin/db_load -T -t hash -f /etc/vsftpd/virtual_users.txt /etc/vsftpd/virtual_users.db
+echo "pasv_address=$PASV_ADDRESS" >> /etc/vsftpd.conf
+echo "pasv_min_port=$PASV_MIN_PORT" >> /etc/vsftpd.conf
+echo "pasv_max_port=$PASV_MAX_PORT" >> /etc/vsftpd.conf
+
+
+/usr/sbin/vsftpd /etc/vsftpd.conf
